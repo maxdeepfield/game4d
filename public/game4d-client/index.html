@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="http://home.absolutefreakout.com:20595/socket.io/socket.io.js"></script>
+    <style> * { margin: 0; padding: 0; cursor: none; height:100%;width:100%; overflow: hidden}</style>
+    <title>game4d</title>
+</head>
+<body><canvas id="canvas"></canvas>
+<script type="module">
+    import Game from './game.js';
+    let game = new Game();
+    setTimeout(function(){
+        game.update();
+    },10)
+</script></body>
+</html>

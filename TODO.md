@@ -1,0 +1,39 @@
+# TODO
+
+- bots
+  - movement
+    - stay
+    - defend
+    - go from to
+  - shoot
+    - random
+    - when player in radius
+  - boss
+- sublevels inside big level via teleports
+  - make own levels isolated and share to play together, but main world remains for admins
+  - make own "game" with start finish and lava (every level has score table?)
+  - rent main world territory to build whatever you want
+  - shkaf to allow build on top of main world
+  - can copy paste levels dnd
+  - ladders
+  - labyrinth
+  - minimap
+- heed and seek
+- loot from enemy and players
+- cherepashkas
+- menu/settings
+- sounds/music
+- my position
+- my hp
+- flying monsters
+- moving platforms
+- can be done
+- collectible coins
+- doors/keys
+- weapons
+- hp potions
+- lives
+- npc for story and quests
+- inventory
+- rpg experience
+- coop-like replay again faster and stronger
