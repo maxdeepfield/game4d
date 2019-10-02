@@ -125,12 +125,12 @@ class Player extends EventEmitter {
 
 
         if (this.keys.w) {
-            //if (!this.jumping && this.grounded && !this.jumping_last) {
+            if (!this.jumping && this.grounded && !this.jumping_last) {
                 this.jumping = true;
                 this.grounded = false;
                 this.velY = -this.maxSpeed * 2;
                 this.jumping_last = true;
-           // }
+            }
         } else {
             this.jumping_last = false;
         }

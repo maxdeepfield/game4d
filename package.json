@@ -10,7 +10,7 @@
     "lint": "eslint src --ext ts",
     "tsc": "tsc",
     "run": "nodemon dist/index.js",
-    "play": "http-server -p 80 ./public/game4d-client",
+    "play": "http-server -p 80 ./public/game4d-client -o http://127.0.0.1:80/index.html",
     "huj": "ping delfi.lv"
   },
   "nodemonConfig": {
