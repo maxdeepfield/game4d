@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch & nodemon dist",
+    "dev": "tsc --watch",
     "test": "tsc && mocha dist/**/*.spec.js",
     "lint": "eslint src --ext ts",
     "tsc": "tsc",
-    "run": "nodemon dist/index.js",
-    "play": "http-server -p 80 ./public/game4d-client -o http://127.0.0.1:80/index.html"
+    "run": "nodemon --watch dist/*.js dist/index.js",
+    "play": "http-server -p 9999 ./public/game4d-client -o http://127.0.0.1:9999/index.html"
   },
   "nodemonConfig": {
     "ignore": [

@@ -1,24 +1,19 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const gameloop = require('node-gameloop');
 const express = require('express');
-
 let path = require('path');
 let app = express();
 let http = require('http').createServer(app);
 let io = require('socket.io')(http);
 let fs = require('fs');
-
-import Player from './Player'
-import Box from './Box'
-import Bot from './Bot'
-import Utils from './Utils'
-import LevelList from './LevelList'
-import Level from './Level'
-
+const Player_1 = require("./Player");
+const Box_1 = require("./Box");
+const Bot_1 = require("./Bot");
+const Utils_1 = require("./Utils");
 const PORT = 9009;
 const FPS = 60;
-
 console.log('PORT', PORT, 'FPS', FPS);
-
 /* TODO
 let levels = new LevelList();
 let level = new Level({name:'huj'});
@@ -29,32 +24,28 @@ console.log(level.boxes);
 console.log(level.save());
 
  */
-
 let players = new Map();
 let boxes = new Map();
 let bots = new Map();
-
 let boxes_count = 0;
 let bots_count = 0;
-
 let saved_boxes = require('./data/boxes.json');
-saved_boxes.boxes.forEach(function (box: Box) {
+saved_boxes.boxes.forEach(function (box) {
     let id = boxes_count++;
     box.id = id;
-    boxes.set(id, new Box(box));
+    boxes.set(id, new Box_1.default(box));
 });
-
 let saved_bots = require('./data/bots.json');
-saved_bots.bots.forEach(function (bot: Bot) {
+saved_bots.bots.forEach(function (bot) {
     let id = bots_count++;
     bot.id = id;
-    bots.set(id, new Bot(bot));
+    bots.set(id, new Bot_1.default(bot));
 });
-
-function load_scores(cb?) {
+function load_scores(cb) {
     let fs = require('fs');
     fs.readFile('./dist/data/scores.json', 'utf8', function (err, data) {
-        if (err) throw err;
+        if (err)
+            throw err;
         let scoreboard = JSON.parse(data);
         players.forEach(function (player) {
             player.score = 0;
@@ -70,39 +61,34 @@ function load_scores(cb?) {
             cb(scoreboard);
         }
     });
-
 }
-
 load_scores();
-
-function save_boxes(callback:Function) {
+function save_boxes(callback) {
     let b = [];
     boxes.forEach(function (box) {
         b.push(box);
     });
-    fs.writeFile(path.join(__dirname, 'data/boxes.json'), JSON.stringify({boxes: b}), callback);
+    fs.writeFile(path.join(__dirname, 'data/boxes.json'), JSON.stringify({ boxes: b }), callback);
 }
-
-function save_bots(callback:Function) {
+function save_bots(callback) {
     let b = [];
     bots.forEach(function (bot) {
         bot.sx = bot.x;
         bot.sy = bot.y;
         b.push(bot);
     });
-    fs.writeFile(path.join(__dirname, 'data/bots.json'), JSON.stringify({bots: b}), callback);
+    fs.writeFile(path.join(__dirname, 'data/bots.json'), JSON.stringify({ bots: b }), callback);
 }
-
-function save_scores(callback?:Function) {
+function save_scores(callback) {
     fs.readFile('./dist/data/scores.json', 'utf8', function (err, data) {
-        if (err) throw err;
-
+        if (err)
+            throw err;
         let scoreboard = JSON.parse(data);
         let scores = [];
         console.log(scoreboard.scores);
         scoreboard.scores.forEach(function (score) {
             players.forEach(function (player) {
-                let item = {name: score.name, score: score.score};
+                let item = { name: score.name, score: score.score };
                 if (score.name === player.name) {
                     if (player.score < score.score) {
                         item.score = player.score;
@@ -119,52 +105,40 @@ function save_scores(callback?:Function) {
                 }
             });
             if (!found) {
-                scores.push({name: player.name, score: player.score});
+                scores.push({ name: player.name, score: player.score });
             }
         });
-        fs.writeFile(path.join(__dirname, 'data/scores.json'), JSON.stringify({scores: scores}), function () {
+        fs.writeFile(path.join(__dirname, 'data/scores.json'), JSON.stringify({ scores: scores }), function () {
             if (callback) {
-                callback({scores: scores});
+                callback({ scores: scores });
             }
         });
     });
-
-
 }
-
 io.on('connection', function (socket) {
     console.log('a user connected', socket.id);
-
-    let player = new Player({name: socket.id.substr(0, 7), socket: socket});
-
+    let player = new Player_1.default({ name: socket.id.substr(0, 7), socket: socket });
     player.on('dead', function (overhit) {
         console.log('overhit', overhit);
         player.spawn();
     });
-
     load_scores();
-
     players.set(socket.id, player);
-
     socket.on('msg', function (res) {
         console.log('[MSG] ' + socket.id + ': ', res);
         socket.broadcast.emit('msg', player.name + ': ' + res);
         socket.emit('msg', player.name + ': ' + res);
     });
-
     socket.on('name', function (res) {
         console.log('[name]', res);
         player.name = res;
         load_scores();
     });
-
     socket.on('box', function (box) {
         console.log('[box]', box);
-
         function boxPoint(x1, y1, w1, h1, x2, y2) {
-            return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1
+            return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1;
         }
-
         let deleted = false;
         boxes.forEach(function (box) {
             //  console.log(box);
@@ -179,7 +153,7 @@ io.on('connection', function (socket) {
             return;
         }
         let id = boxes_count++;
-        boxes.set(id, new Box({
+        boxes.set(id, new Box_1.default({
             id: id,
             name: box.name,
             x: player.px,
@@ -188,19 +162,15 @@ io.on('connection', function (socket) {
             width: 70,
             hollow: box.hollow
         }));
-
         save_boxes(function (err) {
             console.log('boxes saved' + err);
         });
     });
-
     socket.on('pick_box', function (req, cb) {
         console.log('[pick_box]', req);
-
         function boxPoint(x1, y1, w1, h1, x2, y2) {
-            return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1
+            return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1;
         }
-
         let found;
         boxes.forEach(function (box) {
             let col = boxPoint(box.x, box.y, box.width, box.height, player.keys.mx, player.keys.my);
@@ -211,15 +181,12 @@ io.on('connection', function (socket) {
         if (found) {
             cb(found.name);
         }
-
     });
     socket.on('bot', function (bot) {
         console.log('[bot]', bot);
-
         function botPoint(x1, y1, w1, h1, x2, y2) {
-            return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1
+            return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1;
         }
-
         let deleted = false;
         bots.forEach(function (bot) {
             let col = botPoint(bot.x, bot.y, bot.width, bot.height, player.keys.mx, player.keys.my);
@@ -233,7 +200,7 @@ io.on('connection', function (socket) {
             return;
         }
         let id = bots_count++;
-        bots.set(id, new Bot({
+        bots.set(id, new Bot_1.default({
             id: id,
             name: bot.name,
             x: player.keys.mx,
@@ -243,27 +210,21 @@ io.on('connection', function (socket) {
             height: 36,
             width: 72
         }));
-
         save_bots(function (err) {
             console.log('bots saved' + err);
         });
-
     });
-
     socket.on('disconnect', function () {
         players.delete(socket.id);
     });
 });
 http.listen(PORT, '0.0.0.0', function () {
     console.log('http://127.0.0.1:' + PORT);
-
     gameloop.setGameLoop(function () {
         update();
     }, 1000 / FPS);
 });
-
 function update() {
-
     let p = [];
     let b = [];
     let s = [];
@@ -287,14 +248,11 @@ function update() {
             width: player.width,
             height: player.height
         });
-
-        player.px = Utils.snapToGrid(player.keys.mx, 70) - 35;
-        player.py = Utils.snapToGrid(player.keys.my, 70) - 35;
-
+        player.px = Utils_1.default.snapToGrid(player.keys.mx, 70) - 35;
+        player.py = Utils_1.default.snapToGrid(player.keys.my, 70) - 35;
         me = p;
     });
     boxes.forEach(function (box) {
-
         //TODO show nearby tiles:
         // function diff(num1, num2) {
         //     if (num1 > num2) {
@@ -314,7 +272,7 @@ function update() {
         //          if (!player.b) {
         //              player.b = [];
         //         }
-        b.push({id: box.id, name: box.name, x: box.x, y: box.y, width: box.width, height: box.height});
+        b.push({ id: box.id, name: box.name, x: box.x, y: box.y, width: box.width, height: box.height });
         //     }
         // });
     });
@@ -332,36 +290,37 @@ function update() {
         boxes: b,
         bots: s
     };
-
     bots.forEach(function (bot) {
         bot.update();
         bot.grounded = false;
         boxes.forEach(function (box) {
             if (!box.hollow && bot.alive) {
-                let dir = Utils.colCheck(bot, box);
+                let dir = Utils_1.default.colCheck(bot, box);
                 if (dir === "l" || dir === "r") {
                     bot.velX = 0;
                     bot.jumping = false;
-                } else if (dir === "b") {
+                }
+                else if (dir === "b") {
                     bot.grounded = true;
                     bot.jumping = false;
                     bot.velX = bot.maxSpeed;
-                } else if (dir === "t") {
+                }
+                else if (dir === "t") {
                     bot.velY *= -1;
                     bot.velX = bot.maxSpeed;
-                } else {
+                }
+                else {
                     bot.velX = bot.maxSpeed;
                 }
             }
         });
     });
-
     players.forEach(function (player) {
         player.grounded = false;
         //player.ladder = false;
         boxes.forEach(function (box) {
-            if (box.name == 124) {//if finished
-                let dir = Utils.colCheck(player, box, true);
+            if (box.name == 124) {
+                let dir = Utils_1.default.colCheck(player, box, true);
                 if (dir) {
                     let score = new Date().getTime() - player.spawnedAt.getTime();
                     if (player.score == 0 || player.score > score) {
@@ -370,16 +329,16 @@ function update() {
                             console.log('scores saved');
                             load_scores(function (res) {
                                 console.log('scores load_scores', res);
-
                             });
-                        })
-                    } else {
+                        });
+                    }
+                    else {
                         load_scores();
                     }
                 }
             }
-            if (box.name == 84 && player.alive) {//if lava
-                let dir = Utils.colCheck(player, box, true);
+            if (box.name == 84 && player.alive) {
+                let dir = Utils_1.default.colCheck(player, box, true);
                 if (dir) {
                     player.spawn();
                     //return;//todo
@@ -401,47 +360,49 @@ function update() {
             //return false;
             //   }
             if (!box.hollow) {
-                let dir = Utils.colCheck(player, box);
+                let dir = Utils_1.default.colCheck(player, box);
                 if (dir === "l" || dir === "r") {
                     player.velX = 0;
                     player.jumping = false;
-                } else if (dir === "b") {
+                }
+                else if (dir === "b") {
                     player.grounded = true;
                     player.jumping = false;
-                } else if (dir === "t") {
+                }
+                else if (dir === "t") {
                     player.velY = 0;
                     if (box.name == 0) {
-                        boxes.delete(box.id);//todo also respawn cooldown?
+                        boxes.delete(box.id); //todo also respawn cooldown?
                     }
                 }
             }
         });
         bots.forEach(function (bot) {
-            if (!bot.alive) return false;
-            let dir = Utils.colCheck(player, bot);
+            if (!bot.alive)
+                return false;
+            let dir = Utils_1.default.colCheck(player, bot);
             if (dir === "l" || dir === "r") {
                 player.velX = 0;
                 player.jumping = false;
                 // console.log('kick!')
-            } else if (dir === "b") {
+            }
+            else if (dir === "b") {
                 player.grounded = true;
                 player.jumping = false;
                 bot.y += 26;
                 // console.log('fKILL HIM');
                 bot.killedAt = new Date().getTime();
                 bot.alive = false;
-            } else if (dir === "t") {
+            }
+            else if (dir === "t") {
                 player.velY *= -1;
                 //   console.log('from bottom?')
             }
         });
-
         player.update();
         player.socket.emit('data', data);
     });
 }
-
-
 /*
 player.hit(50);
 player.keys.w = true;
@@ -465,3 +426,4 @@ player.keys.a = false;
 console.log(player.update().getPosition());
 
 */
+//# sourceMappingURL=index.js.map
