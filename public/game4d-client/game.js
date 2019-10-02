@@ -485,10 +485,10 @@ class Game {
         game.context.clearRect(0, 0, game.canvas.width, game.canvas.height);
 
         if (game.bg_image3.loaded) {
-            //game.context.drawImage(game.bg_image3, 0, 0, 2000, 1000);
+            //game.context.drawImage(game.bg_image3, 0, 0, 4000, 2000);
         }
         if (game.bg_image.loaded && game.me) {
-            game.context.drawImage(game.bg_image, 0 - game.me.velX * 10 - 1020, 0 - (game.me.velY < 10 ? game.me.velY : 4) * 4 - 100, 2800, 1300);
+            game.context.drawImage(game.bg_image, 0 - game.me.velX * 10 - 1020, 0 - (game.me.velY < 10 ? game.me.velY : 4) * 4 - 100, 4800, 1900);
         }
 
         game.context.save();
