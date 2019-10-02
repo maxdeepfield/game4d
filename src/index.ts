@@ -11,25 +11,25 @@ import Player from './Player'
 import Box from './Box'
 import Bot from './Bot'
 import Utils from './Utils'
+import LevelList from './LevelList'
+import Level from './Level'
 
-const PORT = 20595
-const FPS = 60
+const PORT = 20595;
+const FPS = 60;
 
 console.log('PORT', PORT, 'FPS', FPS);
 
-import LevelList from './LevelList'
-import Level from './Level'
-let levels = new LevelList()
-let level = new Level({name:'huj'})
-levels.addItem(level)
-let box_id = level.boxes.addItem(new Box({name:'1'}))
-level.boxes.getItem(box_id).name = '2'
-console.log(level.boxes)
-console.log(level.save())
+let levels = new LevelList();
+let level = new Level({name:'huj'});
+levels.addItem(level);
+let box_id = level.boxes.addItem(new Box({name:'1'}));
+level.boxes.getItem(box_id).name = '2';
+console.log(level.boxes);
+console.log(level.save());
 
-let players = new Map()
-let boxes = new Map()
-let bots = new Map()
+let players = new Map();
+let boxes = new Map();
+let bots = new Map();
 
 let boxes_count = 0;
 let bots_count = 0;
