@@ -8,7 +8,7 @@
 <body><canvas id="canvas"></canvas>
 <script type="module">
     import Game from './game.js';
-    let game = new Game();
+    let game = new Game({addr:'http://home.absolutefreakout.com:20595'});
     setTimeout(function(){
         game.update();
     },10)

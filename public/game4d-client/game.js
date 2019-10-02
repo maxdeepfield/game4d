@@ -9,8 +9,9 @@ import Player from './src/Player.js';
 import Bot from './src/Bot.js';
 
 class Game {
+    addr;
     constructor(options) {
-
+        this.addr = options.addr;
         let game = this;
 
         class Message {
@@ -287,7 +288,7 @@ class Game {
         game.boxer = false;
         game.me = null;
 
-        game.socket = io('http://home.absolutefreakout.com:20595');
+        game.socket = io(game.addr);
 
         game.socket.on('connect', function () {
             game.socket.emit('msg', 'privet ja tut!!!!!');

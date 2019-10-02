@@ -38,7 +38,7 @@ class Player {
         if (this.dirleft) {
             img = 'l' + img;
         }
-        this.game.context.drawImage(this.game[img], this.x, this.y);
+        this.game.context.drawImage(this.game[img], this.x, this.y);//TODO this causes fatal when bot is killed
         this.game.context.font = "20px Consolas";
         this.game.context.fillStyle = 'white';
         this.game.context.textAlign = "center";
