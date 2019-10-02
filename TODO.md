@@ -1,5 +1,35 @@
 # TODO
 
+v1
+- one shared level
+- total highscore table
+- get score by
+   - finish level in less time
+   - destroy bots
+   - collect coins
+   - find secrets for faster way and lootboxes with score
+
+v2
+- weapons
+- kill other players
+   - do not let them finish
+   - get score for frag
+   - loot killed enemies and get their coins
+
+v3
+- teleports
+- more than 1 level
+
+v4
+- players can create own levels
+   - and play together
+   - and beat local level highscore
+
+v5
+- TBA
+
+# crazy useless endless ideas
+
 - bots
   - movement
     - stay
