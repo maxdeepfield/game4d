@@ -28,15 +28,15 @@ class Game {
             }
         }
 
-        game.msgs = new Map();
+        game.msgs = new Map();//TODO
         game.data = {
             players: [],
             boxes: [],
             bots: []
         };
 
-        game.players = new Map();
-        game.bots = new Map();
+        game.players = new Map();//TODO
+        game.bots = new Map();//TODO
 
         game.canvas = document.getElementById('canvas');
         game.context = game.canvas.getContext('2d');

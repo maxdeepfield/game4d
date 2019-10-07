@@ -1,14 +1,22 @@
 # TODO
 
 v1
+- box stream engine
+   - round the coordinates
+   - stream only visible boxes for each player
 - one shared level
-- total highscore table
+   - make this a clone from popular platformer
+- ui
+   - chat (let it work as console)
+   - current players
+   - some sort of help / tips
+   - total highscore table
 - get score by
    - finish level in less time
    - destroy bots
    - collect coins
    - find secrets for faster way and lootboxes with score
-
+   
 v2
 - weapons
 - kill other players
