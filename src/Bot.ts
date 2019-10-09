@@ -76,7 +76,7 @@ class Bot {
         this.velY += this.gravity;
 
         if (this.grounded) {
-            this.velY = 0;//if grounded to moving box then player velx = box velx
+            this.velY = 0;//todo if grounded to moving box then player velx = box velx
         }
 
         if (this.grounded) {

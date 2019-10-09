@@ -3,7 +3,7 @@
 v1
 - box stream engine
    - round the coordinates
-   - stream only visible boxes for each player
+   - OK stream only visible boxes for each player
 - one shared level
    - make this a clone from popular platformer
 - ui

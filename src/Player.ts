@@ -37,6 +37,7 @@ class Player extends EventEmitter {
     public grounded: boolean;
     public friction = 0.8;
     public gravity = 0.3;
+    public b = [];
     public spawnedAt;
 
     constructor({name,socket}: { name: string, socket }) {
@@ -59,6 +60,7 @@ class Player extends EventEmitter {
         this.gravity = 0.15;
         this.maxSpeed = 4;
         this.hp = 100;
+        this.b = [];
         this.alive = true;
         this.spawn();
 

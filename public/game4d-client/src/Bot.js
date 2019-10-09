@@ -20,7 +20,7 @@ class Player {
 
     update() {
         if (!this.alive) {
-            this.frame = 3;
+            // /this.frame = 3;
             this.dirleft = false;
             return;
         }
@@ -38,11 +38,13 @@ class Player {
         if (this.dirleft) {
             img = 'l' + img;
         }
+        console.log(img);
+        console.log(this.game[img]);
         this.game.context.drawImage(this.game[img], this.x, this.y);//TODO this causes fatal when bot is killed
         this.game.context.font = "20px Consolas";
         this.game.context.fillStyle = 'white';
         this.game.context.textAlign = "center";
-         this.game.context.fillText(this.x, this.x, this.y);
+        //this.game.context.fillText(this.x, this.x, this.y);
     }
 }
 

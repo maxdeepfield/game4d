@@ -293,30 +293,30 @@ function update() {
 
         me = p;
     });
+    players.forEach(function (player) {
+        player.b = [];
+    });
     boxes.forEach(function (box) {
 
         //TODO show nearby tiles:
-        // function diff(num1, num2) {
-        //     if (num1 > num2) {
-        //         return (num1 - num2);
-        //     } else {
-        //         return (num2 - num1);
-        //     }
-        // }
-        // function dist(x1, y1, x2, y2) {
-        //     let deltaX = diff(x1, x2);
-        //     let deltaY = diff(y1, y2);
-        //     let dist = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-        //     return (dist);
-        // }
-        //  players.forEach(function (player) {
-        //      if (dist(box.x, box.y, player.x, player.y) < 200) {
-        //          if (!player.b) {
-        //              player.b = [];
-        //         }
-        b.push({id: box.id, name: box.name, x: box.x, y: box.y, width: box.width, height: box.height});
-        //     }
-        // });
+        function dist(x1, y1, x2, y2) {
+            function diff(num1, num2) {
+                if (num1 > num2) {
+                    return (num1 - num2);
+                } else {
+                    return (num2 - num1);
+                }
+            }
+            let deltaX = diff(x1, x2);
+            let deltaY = diff(y1, y2);
+            let dist = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+            return (dist);
+        }
+         players.forEach(function (player) {
+              if (dist(box.x, box.y, player.x, player.y) < 600) {
+                  player.b.push({id: box.id, name: box.name, x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height)});
+            }
+        });
     });
     bots.forEach(function (bot) {
         s.push({
@@ -360,11 +360,11 @@ function update() {
         player.grounded = false;
         //player.ladder = false;
         boxes.forEach(function (box) {
-            if (box.name == 124) {//if finished
+            if (box.name == 116) {//if finished
                 let dir = Utils.colCheck(player, box, true);
                 if (dir) {
-                    let score = new Date().getTime() - player.spawnedAt.getTime();
-                    if (player.score == 0 || player.score > score) {
+                    let score = new Date().getTime() - player.spawnedAt.getTime() + player.score;
+                    if (player.score <= 0 || player.score > score) {
                         player.score = score;
                         save_scores(function () {
                             console.log('scores saved');
@@ -430,6 +430,7 @@ function update() {
                 // console.log('fKILL HIM');
                 bot.killedAt = new Date().getTime();
                 bot.alive = false;
+                player.score -= 1000;
             } else if (dir === "t") {
                 player.velY *= -1;
                 //   console.log('from bottom?')
@@ -437,6 +438,7 @@ function update() {
         });
 
         player.update();
+        data.boxes = player.b;
         player.socket.emit('data', data);
     });
 }

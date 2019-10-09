@@ -25,13 +25,20 @@ class Table extends UiElement {
             cell_count = cells.length;
             if (cell_count) {
                 cell_width = this.width / cell_count;
+                let row_cells = Object.keys(rows[0]);
+                let header = {};
+                row_cells.forEach(function(cell_name,cell_index) {
+                    header[cell_name] = cell_name;
+                });
+                rows.unshift(header);
+                rows_count++;
                 rows.forEach(function(row,row_index){
                     let row_cells = Object.keys(row);
                     row_cells.forEach(function(cell_name,cell_index){
                         let cell = row[cell_name];
                         me.context.textAlign = 'left';
-                        me.context.font = "15px Consolas";
-                        me.context.fillText(cell, me.x + cell_index * cell_width - cell_width, me.y +  + row_index * row_height - row_height);
+                        me.context.font = (row_index===0?20:15)+"px Consolas";
+                        me.context.fillText(cell, me.x + cell_index * cell_width - cell_width, me.y + row_index * row_height - row_height);
                     });
                 });
             }

@@ -5,6 +5,8 @@ class Player {
         this.x = props.x;
         this.y = props.y;
         this.name = props.name;
+        this.score = props.score;
+        this.online = props.online;
         this.jumping = props.jumping;
         this.grounded = props.grounded;
         this.hp = props.hp;

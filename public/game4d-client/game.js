@@ -46,10 +46,16 @@ class Game {
             e.preventDefault();
         };
         game.ui = new UI({context: game.context});//todo  use Game somehow?
+
         game.ui_scoreboard = new Table({
             x: 340, y: 200, width: 400, height: 300, background: 'rgba(0,0,0,0.2)', data: [], context: game.context
         });
         game.ui.add(game.ui_scoreboard);
+
+        game.ui_playerlist = new Table({
+            x: 340, y: 200, width: 400, height: 300, background: 'rgba(110,0,0,0.2)', data: [], context: game.context
+        });
+        game.ui.add(game.ui_playerlist);
 
         game.ui.add(new UiElement({
             x: 0, y: 0, width: 2000, height: 50, background: 'rgba(0,0,0,0.2)', context: game.context
@@ -321,6 +327,8 @@ class Game {
                     existing.y = player.y;
                     existing.grounded = player.grounded;
                     existing.jumping = player.jumping;
+                    existing.score = player.score;
+                    existing.online = player.online;
                     existing.velX = player.velX;
                     existing.velY = player.velY;
                 } else {
@@ -489,7 +497,7 @@ class Game {
             //game.context.drawImage(game.bg_image3, 0, 0, 4000, 2000);
         }
         if (game.bg_image.loaded && game.me) {
-            game.context.drawImage(game.bg_image, 0 - game.me.velX * 10 - 1020, 0 - (game.me.velY < 10 ? game.me.velY : 4) * 4 - 100, 4800, 1900);
+           game.context.drawImage(game.bg_image, Math.round(0 - (game.me.velY > 10 ? game.me.velX * 10 : 0) - 1020),  Math.round(0 - (game.me.velY < 10 ? game.me.velY : 4) * 4 - 100), 4800, 1900);
         }
 
         game.context.save();
@@ -506,16 +514,20 @@ class Game {
 
         let score_rows = [];
 
+        let playerlist = [];
+
         game.players.forEach(function (player) {
             player.update();
             player.draw();
+            playerlist.push({name:player.name,time:player.online,score:player.score})
         });
 
-        game.ui_scoreboard.setData(score_rows);
+        game.ui_playerlist.setData(playerlist);
+        game.ui_scoreboard.setData(score_rows);//todo?
 
         game.data.boxes.forEach(function (box) {
             if (game.box_tiles[box.name] && game.box_tiles[box.name].loaded) {
-                game.context.drawImage(game.box_tiles[box.name], box.x, box.y);
+                game.context.drawImage(game.box_tiles[box.name], Math.round(box.x), Math.round(box.y));
             }
         });
 

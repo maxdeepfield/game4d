@@ -6,6 +6,7 @@ class Player extends events_1.EventEmitter {
         super();
         this.friction = 0.8;
         this.gravity = 0.3;
+        this.b = [];
         this.id = socket.id;
         this.name = name;
         this.socket = socket;
@@ -24,6 +25,7 @@ class Player extends events_1.EventEmitter {
         this.gravity = 0.15;
         this.maxSpeed = 4;
         this.hp = 100;
+        this.b = [];
         this.alive = true;
         this.spawn();
         let player = this;
