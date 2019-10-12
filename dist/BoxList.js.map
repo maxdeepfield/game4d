@@ -1,1 +1,0 @@
-{"version":3,"file":"BoxList.js","sourceRoot":"","sources":["../src/BoxList.ts"],"names":[],"mappings":";;AACA,iCAAyB;AAEzB,aAAc,SAAQ,cAAI;IAEtB,YAAY,KAAa;QACrB,KAAK,CAAC,KAAK,CAAC,CAAA;QACZ,IAAI,CAAC,KAAK,GAAG,KAAK,IAAI,EAAE,CAAA;QACxB,OAAO,CAAC,IAAI,CAAC,oBAAoB,CAAC,CAAA;IACtC,CAAC;CACJ;AAED,kBAAe,OAAO,CAAA"}

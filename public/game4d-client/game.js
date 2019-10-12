@@ -48,60 +48,61 @@ class Game {
         game.ui = new UI({context: game.context});//todo  use Game somehow?
 
         game.ui_scoreboard = new Table({
-            x: 340, y: 200, width: 400, height: 300, background: 'rgba(0,0,0,0.2)', data: [], context: game.context
+            x: 340, y: 200, width: 300, height: 300, background: 'rgba(0,0,0,0.2)', data: [], context: game.context
         });
         game.ui.add(game.ui_scoreboard);
 
         game.ui_playerlist = new Table({
-            x: 340, y: 200, width: 400, height: 300, background: 'rgba(110,0,0,0.2)', data: [], context: game.context
+            x: game.canvas.width - 320, y: 60, width: 300, height: 0, background: 'rgba(110,0,0,0.2)', data: [], context: game.context
         });
         game.ui.add(game.ui_playerlist);
 
         game.ui.add(new UiElement({
             x: 0, y: 0, width: 2000, height: 50, background: 'rgba(0,0,0,0.2)', context: game.context
         }));
-        game.ui.add(new Input({x: 10, y: 250, width: 200, height: 30, text: 'vasja', context: game.context}));
-        let g = new ButtonGroup({
+       // game.ui.add(new Input({x: 10, y: 250, width: 200, height: 30, text: 'vasja', context: game.context}));
+
+        let levelDrawButtons = new ButtonGroup({
             x: 10, y: 60, context: game.context
         });
-        g.add(new Button({
-            text: 'D is OFF',
+        levelDrawButtons.add(new Button({
+            text: 'DRAW OFF',
             onClick: function () {
                 game.boxer = !game.boxer;
                 if (game.boxer) {
-                    this.text = 'D is ON';
+                    this.text = 'DRAW ON';
                 }
                 if (!game.boxer) {
-                    this.text = 'D is OFF';
+                    this.text = 'DRAW OFF';
                 }
             }, context: game.context
         }));
-        g.add(new Button({
-            text: 'H is OFF',
+        levelDrawButtons.add(new Button({
+            text: 'HOLLOW OFF',
             onClick: function () {
                 game.hollow = !game.hollow;
                 if (game.hollow) {
-                    this.text = 'H is ON';
+                    this.text = 'HOLLOW ON';
                 }
                 if (!game.hollow) {
-                    this.text = 'H is OFF';
+                    this.text = 'HOLLOW OFF';
                 }
             }, context: game.context
         }));
-        g.add(new Button({//TODO hmodef
-            text: 'H mode F',
-            onClick: function () {
-                game.hmodef = !game.hmodef;
-                if (game.hmodef) {
-                    this.text = 'H mode B';
-                }
-                if (!game.hmodef) {
-                    this.text = 'H mode F';
-                }
-            }, context: game.context
-        }));
-        g.add(new Button({
-            text: '< P BOX',
+        // levelDrawButtons.add(new Button({//TODO hmodef
+        //     text: 'H mode F',
+        //     onClick: function () {
+        //         game.hmodef = !game.hmodef;
+        //         if (game.hmodef) {
+        //             this.text = 'H mode B';
+        //         }
+        //         if (!game.hmodef) {
+        //             this.text = 'H mode F';
+        //         }
+        //     }, context: game.context
+        // }));
+        levelDrawButtons.add(new Button({
+            text: '< BOX',
             onClick: function () {
                 game.c--;
                 if (!game.box_tiles[game.c]) {
@@ -110,8 +111,8 @@ class Game {
                 game.c_img = game.box_tiles[game.c];
             }, context: game.context
         }));
-        g.add(new Button({
-            text: 'N BOX >',
+        levelDrawButtons.add(new Button({
+            text: 'BOX >',
             onClick: function () {
                 game.c++;
                 if (!game.box_tiles[game.c]) {
@@ -120,54 +121,62 @@ class Game {
                 game.c_img = game.box_tiles[game.c];
             }, context: game.context
         }));
-
-        g.add(new Button({
-            text: 'P BOX OFF',
+        levelDrawButtons.add(new Button({
+            text: 'PICK OFF',
             onClick: function () {
                 game.pick_box = !game.pick_box;
                 if (game.pick_box) {
-                    this.text = 'P BOX ON';
+                    this.text = 'PICK ON';
                 }
                 if (!game.pick_box) {
-                    this.text = 'P BOX OFF';
+                    this.text = 'PICK OFF';
                 }
             }, context: game.context
         }));
-        game.ui.add(g);
+        game.ui.add(levelDrawButtons);
 
-        let bot_menu = new ButtonGroup({
-            x: 10, y: 120, context: game.context
+        let botDrawButtons = new ButtonGroup({
+            x: levelDrawButtons.width+ 20, y: 60 , context: game.context
         });
-        bot_menu.add(new Button({
-            text: 'B is OFF',
+        botDrawButtons.add(new Button({
+            text: 'BOT OFF',
             onClick: function () {
                 game.bot_creator = !game.bot_creator;
                 if (game.bot_creator) {
-                    this.text = 'B is ON';
+                    this.text = 'BOT ON';
                 }
                 if (!game.bot_creator) {
-                    this.text = 'B is OFF';
+                    this.text = 'BOT OFF';
                 }
             }, context: game.context
         }));
-        game.ui.add(bot_menu);
+        game.ui.add(botDrawButtons);
 
-        game.ui.add(new Infocell({
-            x: 20,
-            y: 300,
-            color: 'white',
-            background: 'rgba(0,0,0,0.7)',
+        let topMenuButtons = new ButtonGroup({
+            x: 0, y: 0, context: game.context
+        });
+        topMenuButtons.add(new Button({
+            label: '[BACKSPACE]',
+            text: 'SPAWN',
+            onClick: function () {
+                game.socket.emit('spawn');
+            }, context: game.context
+        }));
+        topMenuButtons.add(new Infocell({
+            label: '[WASD]',
+            text: 'MOVE',
+            onClick: function () {
+
+            }, context: game.context
+        }));
+        topMenuButtons.add(new Infocell({
             label: '[ENTER]',
             text: 'CHAT',
             onClick: function () {
                 game.socket.emit('msg', prompt('CHAT'))
             }, context: game.context
         }));
-        game.ui.add(new Infocell({
-            x: 20,
-            y: 340,
-            color: 'white',
-            background: 'rgba(0,0,0,0.7)',
+        topMenuButtons.add(new Infocell({
             label: '[F12]',
             text: 'RENAME',
             onClick: function () {
@@ -175,16 +184,7 @@ class Game {
                 game.socket.emit('msg', 'vot kak tiper menja zovut');
             }, context: game.context
         }));
-        game.online_text = new Infocell({
-            x: 10,
-            y: 10,
-            text: '0',
-            label: 'online', context: game.context
-        });
-        game.ui.add(game.online_text);
-        game.ui.add(new Infocell({
-            x: 120,
-            y: 10,
+        topMenuButtons.add(new Infocell({
             text: new Date().toISOString().split('T')[1].split('.')[0],
             label: 'Time',
             onUpdate: function () {
@@ -192,16 +192,19 @@ class Game {
                 this.draw();
             }, context: game.context
         }));
+        game.online_text = new Infocell({
+            text: '0',
+            label: 'online', context: game.context
+        });
+        game.ui.add(game.online_text);
+        topMenuButtons.add(game.online_text);
+
         game.ui_keyhelper = new Infocell({
-            x: 340,
-            y: 10,
             text: '-',
             label: 'Key Code', context: game.context
         });
-        game.ui.add(game.ui_keyhelper);
+        topMenuButtons.add(game.ui_keyhelper);
         let ui_c = new Infocell({
-            x: 450,
-            y: 10,
             text: '-',
             label: 'Tile Index',
             onUpdate: function () {
@@ -209,15 +212,10 @@ class Game {
                 this.draw();
             }, context: game.context
         });
-        game.ui.add(ui_c);
-        game.ui.add(new Button({
-            x: 230,
-            y: 10,
-            text: 'respawn',
-            onClick: function () {
-                game.socket.emit('spawn');
-            }, context: game.context
-        }));
+        topMenuButtons.add(ui_c);
+        game.ui.add(topMenuButtons);
+
+
 
         game.keys = {
             w: 0,
@@ -297,7 +295,7 @@ class Game {
         game.socket = io(game.addr);
 
         game.socket.on('connect', function () {
-            game.socket.emit('msg', 'privet ja tut!!!!!');
+            game.socket.emit('msg', 'hi there');
         });
 
         game.socket.on('data', function (res) {
@@ -328,6 +326,7 @@ class Game {
                     existing.grounded = player.grounded;
                     existing.jumping = player.jumping;
                     existing.score = player.score;
+                    existing.name = player.name;
                     existing.online = player.online;
                     existing.velX = player.velX;
                     existing.velY = player.velY;
@@ -469,8 +468,9 @@ class Game {
                 game.socket.emit('msg', prompt('CHAT'));
             }
             if (event.keyCode === 113) {
-                game.socket.emit('msg', 'vot kak tiper menja zovut');
-                game.socket.emit('name', prompt('NAME'));
+                let name = prompt('NAME');
+                game.socket.emit('msg', 'my new name is: '+name);
+                game.socket.emit('name', name);
             }
             if (event.keyCode === 38 || event.keyCode === 87) {
                 game.keys.w = 0;
@@ -493,11 +493,11 @@ class Game {
 
         game.context.clearRect(0, 0, game.canvas.width, game.canvas.height);
 
-        if (game.bg_image3.loaded) {
-            //game.context.drawImage(game.bg_image3, 0, 0, 4000, 2000);
+        if (game.bg_image3.loaded && game.me) {
+           //game.context.drawImage(game.bg_image, 0, -400, 4000, 2000);
         }
         if (game.bg_image.loaded && game.me) {
-           game.context.drawImage(game.bg_image, Math.round(0 - (game.me.velY > 10 ? game.me.velX * 10 : 0) - 1020),  Math.round(0 - (game.me.velY < 10 ? game.me.velY : 4) * 4 - 100), 4800, 1900);
+           game.context.drawImage(game.bg_image, Math.round(0 -  game.me.velX * 10 - 1020),  Math.round(0 - game.me.velY * 3 - 100), 4800, 1900);
         }
 
         game.context.save();
@@ -509,7 +509,7 @@ class Game {
         });
 
         if (game.me) {
-            game.context.translate(-(game.me.x - game.canvas.width / 2), -(game.me.y - game.canvas.height / 2));
+            game.context.translate(-(game.me.x - Math.round(game.canvas.width / 2)), -(game.me.y - Math.round(game.canvas.height / 2)));
         }
 
         let score_rows = [];
@@ -519,7 +519,7 @@ class Game {
         game.players.forEach(function (player) {
             player.update();
             player.draw();
-            playerlist.push({name:player.name,time:player.online,score:player.score})
+            playerlist.push({name:player.name,time:player.online,x:Math.round(player.x),y:Math.round(player.y),score:player.score})
         });
 
         game.ui_playerlist.setData(playerlist);
@@ -567,10 +567,18 @@ class Game {
             game.online_text.setValue(game.data.players.length);
         }
 
+        let max_msg = 20;
+        let msg_y = game.canvas.height-15*(max_msg+1)+4-20;
+        let msg_x = 10;
+
+        let msg_height = game.msgs.size*15;
+        game.context.fillStyle = 'rgba(0,0,0,0.4)';
+        game.context.fillRect(msg_x,msg_y, 300, 15*(max_msg+1)+4);
+
         game.context.font = "10px Consolas";
-        game.context.fillStyle = 'red';
+        game.context.fillStyle = 'white';
+        game.context.textBaseline = 'top';
         game.context.textAlign = 'left';
-        let msg_y = 400;
         let aaa = [];
         game.msgs.forEach(function (msg) {
             aaa.push(msg);
@@ -578,20 +586,23 @@ class Game {
         aaa.reverse();
         aaa.forEach(function (msg, i) {
             msg.update();
-            if (i > 9) {
+            if (i > max_msg) {
                 return false;
             }
-            game.context.fillText(msg.created.toISOString().split('T')[1].split('.')[0] + '] ' + msg.text, 30, msg_y);
+            game.context.fillText(msg.created.toISOString().split('T')[1].split('.')[0] + '] ' + msg.text, msg_x+5, msg_y+6);
             msg_y += 15;
         });
 
+
+
+
         if (game.me) {
-            let a = 13;
-            game.context.fillStyle = 'steelblue';
-            game.context.fillRect(game.keys.xx, game.keys.xy, a, 1);
-            game.context.fillRect(game.keys.xx, game.keys.xy, 1, a);
-            game.context.fillRect(game.keys.xx - a, game.keys.xy, a, 1);
-            game.context.fillRect(game.keys.xx, game.keys.xy - a, 1, a);
+            let a = 10;
+            game.context.fillStyle = 'white';
+            game.context.fillRect(game.keys.xx, game.keys.xy, a, 2);
+            game.context.fillRect(game.keys.xx, game.keys.xy, 2, a);
+            game.context.fillRect(game.keys.xx - a, game.keys.xy, a, 2);
+            game.context.fillRect(game.keys.xx, game.keys.xy - a, 2, a);
         }
 
         game.socket.emit('keys', game.keys);

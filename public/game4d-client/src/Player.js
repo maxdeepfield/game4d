@@ -43,9 +43,9 @@ class Player {
         this.game.context.fillStyle = 'black';
 
         this.game.context.font = "14px Consolas";
-        this.game.context.fillStyle = 'BLUE';
+        this.game.context.fillStyle = 'white';
         this.game.context.textAlign = "center";
-        // this.game.context.fillText(this.name + ' [' + this.velX + '' + this.velY + ', ' + this.grounded + ', ' + this.frame + ']', this.x, this.y);
+        this.game.context.fillText(this.name , this.x+26, this.y-10);
     }
 }
 

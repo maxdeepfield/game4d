@@ -52,6 +52,7 @@ saved_bots.bots.forEach(function (bot: Bot) {
 });
 
 function load_scores(cb?) {
+    return {scores:[]};
     let fs = require('fs');
     fs.readFile('./dist/data/scores.json', 'utf8', function (err, data) {
         if (err) throw err;
@@ -94,6 +95,7 @@ function save_bots(callback:Function) {
 }
 
 function save_scores(callback?:Function) {
+    callback({scores: []});
     fs.readFile('./dist/data/scores.json', 'utf8', function (err, data) {
         if (err) throw err;
 
@@ -366,15 +368,15 @@ function update() {
                     let score = new Date().getTime() - player.spawnedAt.getTime() + player.score;
                     if (player.score <= 0 || player.score > score) {
                         player.score = score;
-                        save_scores(function () {
-                            console.log('scores saved');
-                            load_scores(function (res) {
-                                console.log('scores load_scores', res);
-
-                            });
-                        })
+                        // save_scores(function () {
+                        //     console.log('scores saved');
+                        //     load_scores(function (res) {
+                        //         console.log('scores load_scores', res);
+                        //
+                        //     });
+                        // })
                     } else {
-                        load_scores();
+                        // load_scores();
                     }
                 }
             }
@@ -432,8 +434,10 @@ function update() {
                 bot.alive = false;
                 player.score -= 1000;
             } else if (dir === "t") {
-                player.velY *= -1;
+                //player.velY *= -1;
                 //   console.log('from bottom?')
+
+                player.spawn();
             }
         });
 

@@ -33,9 +33,9 @@ class Player extends EventEmitter {
     public socket;
     public jumping: boolean;
     public jumping_last: boolean;
-    public ladder: boolean;
+    public ladder: boolean;//todo
     public grounded: boolean;
-    public friction = 0.8;
+    public friction = 0.8;//todo
     public gravity = 0.3;
     public b = [];
     public spawnedAt;
@@ -89,6 +89,7 @@ class Player extends EventEmitter {
         this.velX = 0;
         this.velY = 0;
         this.hp = 100;
+        this.score = 0;
         this.spawnedAt = new Date();
         this.alive = true;
         this.update();
