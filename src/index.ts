@@ -1,186 +1,116 @@
-const gameloop = require('node-gameloop');
-const express = require('express');
-
-let path = require('path');
-let app = express();
-let http = require('http').createServer(app);
-let io = require('socket.io')(http);
-let fs = require('fs');
-
+const gameloop = require('node-gameloop')
+const express = require('express')
+const path = require('path')
+const app = express()
+const http = require('http').createServer(app)
+const io = require('socket.io')(http)
+const fs = require('fs')
 import Player from './Player'
 import Box from './Box'
 import Bot from './Bot'
+import Dot from './Dot'
+import Gore from './Gore'
 import Utils from './Utils'
 import LevelList from './LevelList'
 import Level from './Level'
 
-const PORT = 9009;
-const FPS = 60;
+const PORT = 9009
+const FPS = 60
 
-console.log('PORT', PORT, 'FPS', FPS);
+console.log('PORT', PORT, 'FPS', FPS)
 
-/* TODO
-let levels = new LevelList();
-let level = new Level({name:'huj'});
-levels.addItem(level);
-let box_id = level.boxes.addItem(new Box({name:'1'}));
-level.boxes.getItem(box_id).name = '2';
-console.log(level.boxes);
-console.log(level.save());
+let players = new Map()
+let boxes = new Map()
+let bots = new Map()
+let dots = new Map()
+let gores = new Map()
 
- */
+let boxes_count = 0
+let bots_count = 0
+let dots_count = 0
+let gores_count = 0
 
-let players = new Map();
-let boxes = new Map();
-let bots = new Map();
-
-let boxes_count = 0;
-let bots_count = 0;
-
-let saved_boxes = require('./data/boxes.json');
-saved_boxes.boxes.forEach(function (box: Box) {
-    let id = boxes_count++;
-    box.id = id;
-    boxes.set(id, new Box(box));
-});
-
-let saved_bots = require('./data/bots.json');
-saved_bots.bots.forEach(function (bot: Bot) {
-    let id = bots_count++;
-    bot.id = id;
-    bots.set(id, new Bot(bot));
-});
+let saved_boxes = require('./data/boxes.json')
+saved_boxes.boxes.forEach((box: Box) => {
+    let id = boxes_count++
+    box.id = id
+    boxes.set(id, new Box(box))
+})
+let saved_bots = require('./data/bots.json')
+saved_bots.bots.forEach((bot: Bot) => {
+    let id = bots_count++
+    bot.id = id
+    bots.set(id, new Bot(bot))
+})
 
 function load_scores(cb?) {
-    return {scores:[]};
-    let fs = require('fs');
-    fs.readFile('./dist/data/scores.json', 'utf8', function (err, data) {
-        if (err) throw err;
-        let scoreboard = JSON.parse(data);
-        players.forEach(function (player) {
-            player.score = 0;
-        });
-        scoreboard.scores.forEach(function (score) {
-            players.forEach(function (player) {
-                if (player.name === score.name) {
-                    player.score = score.score;
-                }
-            });
-        });
-        if (cb) {
-            cb(scoreboard);
-        }
-    });
 
 }
 
-load_scores();
+load_scores()
 
-function save_boxes(callback:Function) {
-    let b = [];
-    boxes.forEach(function (box) {
-        b.push(box);
-    });
-    fs.writeFile(path.join(__dirname, 'data/boxes.json'), JSON.stringify({boxes: b}), callback);
+function save_boxes(callback: Function) {
+    let b = []
+    boxes.forEach((box) => {
+        b.push(box)
+    })
+    fs.writeFile(path.join(__dirname, 'data/boxes.json'), JSON.stringify({boxes: b}), callback)
 }
 
-function save_bots(callback:Function) {
-    let b = [];
-    bots.forEach(function (bot) {
-        bot.sx = bot.x;
-        bot.sy = bot.y;
-        b.push(bot);
-    });
-    fs.writeFile(path.join(__dirname, 'data/bots.json'), JSON.stringify({bots: b}), callback);
+function save_bots(callback: Function) {
+    let b = []
+    bots.forEach((bot) => {
+        bot.sx = bot.x
+        bot.sy = bot.y
+        b.push(bot)
+    })
+    fs.writeFile(path.join(__dirname, 'data/bots.json'), JSON.stringify({bots: b}), callback)
 }
 
-function save_scores(callback?:Function) {
-    callback({scores: []});
-    fs.readFile('./dist/data/scores.json', 'utf8', function (err, data) {
-        if (err) throw err;
-
-        let scoreboard = JSON.parse(data);
-        let scores = [];
-        console.log(scoreboard.scores);
-        scoreboard.scores.forEach(function (score) {
-            players.forEach(function (player) {
-                let item = {name: score.name, score: score.score};
-                if (score.name === player.name) {
-                    if (player.score < score.score) {
-                        item.score = player.score;
-                    }
-                }
-                scores.push(item);
-            });
-        });
-        players.forEach(function (player) {
-            let found = false;
-            scores.forEach(function (score) {
-                if (score.name === player.name) {
-                    found = true;
-                }
-            });
-            if (!found) {
-                scores.push({name: player.name, score: player.score});
-            }
-        });
-        fs.writeFile(path.join(__dirname, 'data/scores.json'), JSON.stringify({scores: scores}), function () {
-            if (callback) {
-                callback({scores: scores});
-            }
-        });
-    });
-
-
+function save_scores(callback?: Function) {
+    callback({scores: []})
 }
 
-io.on('connection', function (socket) {
-    console.log('a user connected', socket.id);
+io.on('connection', (socket) => {
+    console.log('a user connected', socket.id)
 
-    let player = new Player({name: socket.id.substr(0, 7), socket: socket});
+    let player = new Player({name: socket.id.substr(0, 7), socket: socket})
 
-    player.on('dead', function (overhit) {
-        console.log('overhit', overhit);
-        player.spawn();
-    });
+    load_scores()
 
-    load_scores();
+    players.set(socket.id, player)
 
-    players.set(socket.id, player);
+    socket.on('msg', (res) => {
+        socket.broadcast.emit('msg', player.name + ': ' + res)
+        socket.emit('msg', player.name + ': ' + res)
+    })
+    socket.on('name', (res) => {
+        player.rename(res)
+        load_scores()
+    })
 
-    socket.on('msg', function (res) {
-        console.log('[MSG] ' + socket.id + ': ', res);
-        socket.broadcast.emit('msg', player.name + ': ' + res);
-        socket.emit('msg', player.name + ': ' + res);
-    });
+    //todo use BoxList
+    socket.on('box', (box) => {
+        console.log('[box]', box)
 
-    socket.on('name', function (res) {
-        console.log('[name]', res);
-        player.name = res;
-        load_scores();
-    });
-
-    socket.on('box', function (box) {
-        console.log('[box]', box);
-
-        function boxPoint(x1, y1, w1, h1, x2, y2) {
+        function boxPoint(x1, y1, w1, h1, x2, y2) {//todo do not repeat do existence check elsewhere universaly
             return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1
         }
 
-        let deleted = false;
-        boxes.forEach(function (box) {
-            //  console.log(box);
-            let col = boxPoint(box.x, box.y, box.width, box.height, player.keys.mx, player.keys.my);
+        let deleted = false
+        boxes.forEach((box) => {
+            //  console.log(box)
+            let col = boxPoint(box.x, box.y, box.width, box.height, player.keys.mx, player.keys.my)
             if (col) {
-                boxes.delete(box.id);
-                console.log('deleted box', box);
-                deleted = true;
+                boxes.delete(box.id)
+                console.log('deleted box', box)
+                deleted = true
             }
-        });
+        })
         if (deleted) {
-            return;
+            return
         }
-        let id = boxes_count++;
+        let id = boxes_count++
         boxes.set(id, new Box({
             id: id,
             name: box.name,
@@ -189,52 +119,80 @@ io.on('connection', function (socket) {
             height: 70,
             width: 70,
             hollow: box.hollow
-        }));
+        }))
 
-        save_boxes(function (err) {
-            console.log('boxes saved' + err);
-        });
-    });
+        save_boxes((err) => {
+            console.log('boxes save error ' + err)
+        })
+    })
 
-    socket.on('pick_box', function (req, cb) {
-        console.log('[pick_box]', req);
+    let platf_from;
+    let platf_to;
+
+    socket.on('platf_from', () => {
+        platf_from = [player.px,player.py]
+        console.log('[platf_from]', platf_from)
+    })
+    socket.on('platf_to', () => {
+        platf_to = [player.px,player.py]
+        console.log('[platf_to]', platf_to)
+    })
+    socket.on('platf_make', () => {
+
+        let id = boxes_count++
+        boxes.set(id, new Box({
+            id: id,
+            name: 5,
+            x: platf_from[0],
+            y: platf_from[1],
+            moving: true,
+            tx: platf_to[0],
+            ty: platf_to[1],
+            height: 70,
+            width: 70
+        }))
+        console.log('[platf_make]', platf_from, platf_to, boxes)
+    })
+
+    socket.on('pick_box', (req, cb) => {
+        console.log('[pick_box]', req)
 
         function boxPoint(x1, y1, w1, h1, x2, y2) {
             return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1
         }
 
-        let found;
-        boxes.forEach(function (box) {
-            let col = boxPoint(box.x, box.y, box.width, box.height, player.keys.mx, player.keys.my);
+        let found
+        boxes.forEach((box) => {
+            let col = boxPoint(box.x, box.y, box.width, box.height, player.keys.mx, player.keys.my)
             if (col) {
-                found = box;
+                found = box
             }
-        });
+        })
         if (found) {
-            cb(found.name);
+            if (cb) cb(found.name)
         }
 
-    });
-    socket.on('bot', function (bot) {
-        console.log('[bot]', bot);
+    })
+    socket.on('bot', (bot) => {
+        console.log('[bot]', bot)
 
         function botPoint(x1, y1, w1, h1, x2, y2) {
             return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1
         }
 
-        let deleted = false;
-        bots.forEach(function (bot) {
-            let col = botPoint(bot.x, bot.y, bot.width, bot.height, player.keys.mx, player.keys.my);
+        let deleted = false
+        bots.forEach((bot) => {
+            let col = botPoint(bot.x, bot.y, bot.width, bot.height, player.keys.mx, player.keys.my)
             if (col) {
-                bots.delete(bot.id);
-                console.log('deleted bot', bot);
-                deleted = true;
+                bots.delete(bot.id)
+                console.log('deleted bot', bot)
+                deleted = true
             }
-        });
+        })
         if (deleted) {
-            return;
+            return
         }
-        let id = bots_count++;
+        let id = bots_count++
         bots.set(id, new Bot({
             id: id,
             name: bot.name,
@@ -244,230 +202,334 @@ io.on('connection', function (socket) {
             sy: player.keys.my,
             height: 36,
             width: 72
-        }));
+        }))
 
-        save_bots(function (err) {
-            console.log('bots saved' + err);
-        });
+        save_bots((err) => {
+            console.log('bots saved' + err)
+        })
+    })
 
-    });
+    socket.on('disconnect', () => {
+        players.delete(socket.id)
+    })
+})
 
-    socket.on('disconnect', function () {
-        players.delete(socket.id);
-    });
-});
-http.listen(PORT, '0.0.0.0', function () {
-    console.log('http://127.0.0.1:' + PORT);
-
-    gameloop.setGameLoop(function () {
-        update();
-    }, 1000 / FPS);
-});
+http.listen(PORT, '0.0.0.0', () => {
+    console.log('http://127.0.0.1:' + PORT)
+    gameloop.setGameLoop(update, 1000 / FPS)
+})
 
 function update() {
+    players.forEach((player) => {
+        player.px = Utils.snapToGrid(player.keys.mx, 70) - 35
+        player.py = Utils.snapToGrid(player.keys.my, 70) - 35
+    })
+    boxes.forEach((box) => {
+        box.update()
+    })
+    gores.forEach((gore) => {
+        gore.update()
+    })
 
-    let p = [];
-    let b = [];
-    let s = [];
-    let me;
-    players.forEach(function (player) {
-        p.push({
-            id: player.id,
-            name: player.name,
-            x: player.x,
-            y: player.y,
-            score: player.score,
-            mx: player.keys.mx,
-            online: new Date().getTime() - player.spawnedAt.getTime(),
-            my: player.keys.my,
-            px: player.px,
-            py: player.py,
-            grounded: player.grounded,
-            jumping: player.jumping,
-            velX: player.velX,
-            velY: player.velY,
-            width: player.width,
-            height: player.height
-        });
-
-        player.px = Utils.snapToGrid(player.keys.mx, 70) - 35;
-        player.py = Utils.snapToGrid(player.keys.my, 70) - 35;
-
-        me = p;
-    });
-    players.forEach(function (player) {
-        player.b = [];
-    });
-    boxes.forEach(function (box) {
-
-        //TODO show nearby tiles:
-        function dist(x1, y1, x2, y2) {
-            function diff(num1, num2) {
-                if (num1 > num2) {
-                    return (num1 - num2);
-                } else {
-                    return (num2 - num1);
-                }
-            }
-            let deltaX = diff(x1, x2);
-            let deltaY = diff(y1, y2);
-            let dist = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-            return (dist);
-        }
-         players.forEach(function (player) {
-              if (dist(box.x, box.y, player.x, player.y) < 600) {
-                  player.b.push({id: box.id, name: box.name, x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height)});
-            }
-        });
-    });
-    bots.forEach(function (bot) {
-        s.push({
-            id: bot.id, name: bot.name, x: bot.x, y: bot.y,
-            dirleft: bot.dirleft,
-            alive: bot.alive,
-            grounded: bot.grounded,
-            velY: bot.velY, width: bot.width, height: bot.height
-        });
-    });
-    let data = {
-        players: p,
-        boxes: b,
-        bots: s
-    };
-
-    bots.forEach(function (bot) {
-        bot.update();
-        bot.grounded = false;
-        boxes.forEach(function (box) {
+    bots.forEach((bot) => {
+        bot.update()
+        bot.grounded = false
+        boxes.forEach((box) => {
             if (!box.hollow && bot.alive) {
-                let dir = Utils.colCheck(bot, box);
+                let dir = Utils.colCheck(bot, box)
                 if (dir === "l" || dir === "r") {
-                    bot.velX = 0;
-                    bot.jumping = false;
+                    bot.velX = 0
+                    bot.jumping = false
                 } else if (dir === "b") {
-                    bot.grounded = true;
-                    bot.jumping = false;
-                    bot.velX = bot.maxSpeed;
+                    bot.grounded = true
+                    bot.jumping = false
+                    bot.velX = bot.maxSpeed
                 } else if (dir === "t") {
-                    bot.velY *= -1;
-                    bot.velX = bot.maxSpeed;
+                    bot.velY *= -1
+                    bot.velX = bot.maxSpeed
                 } else {
-                    bot.velX = bot.maxSpeed;
+                    bot.velX = bot.maxSpeed
                 }
             }
-        });
-    });
+        })
+    })
 
-    players.forEach(function (player) {
-        player.grounded = false;
-        //player.ladder = false;
-        boxes.forEach(function (box) {
-            if (box.name == 116) {//if finished
-                let dir = Utils.colCheck(player, box, true);
+    dots.forEach((dot) => {
+
+        bots.forEach((bot) => {
+            let dir = Utils.colCheck(bot, dot, true)
+            if (dot.alive && bot.alive && dir) {
+                dot.velX = 0
+                dot.velY = -2
+                dot.alive = false
+                bot.hp -= 10
+                dot.player.socket.emit('blue',10)
+                if (bot.hp < 0) {
+                    bot.killedAt = new Date().getTime()
+                    bot.alive = false
+                    bot.hp = 100
+                    dot.player.score -= 1000
+                    dot.player.socket.emit('blue',60)
+                }
+                let velY = dot.velY
+                velY+=dot.gravity;
+                let tx = dot.tx
+                tx += dot.velX
+                let ty = dot.ty
+                ty += velY
+                gores.set(gores_count++, new Gore({
+                    id: gores_count,
+                    x: dot.x + dot.width / 2,
+                    y: dot.y + dot.height / 2,
+                    tx: tx,
+                    ty: ty,
+                    maxSpeed: Utils.getRandomInt(11, 11),
+                    player: dot.player
+                }))
+            }
+        })
+        boxes.forEach((box) => {
+            if (!box.hollow && dot.alive) {
+                let dir = Utils.colCheck(dot, box, true)
+                if (dir === "l") {
+                    dot.velX = 0
+                    dot.velY = -1
+                } else if (dir === "r") {
+                    dot.velX = 0
+                    dot.velY = -1
+                } else if (dir === "b") {
+                    dot.velX = 0
+                    dot.velY = -1
+                } else if (dir === "t") {
+                    dot.velX = 0
+                    dot.velY = 1
+                }
                 if (dir) {
-                    let score = new Date().getTime() - player.spawnedAt.getTime() + player.score;
+                    dot.alive = false
+                }
+            }
+        })
+        players.forEach((player) => {
+            if (dot.player.id !== player.id) {
+                if (dot.alive) {
+                    let dir = Utils.colCheck(dot, player, true)
+                    if (dir === "l") {
+                        dot.velX = 0
+                        dot.velY = -1
+                    } else if (dir === "r") {
+                        dot.velX = 0
+                        dot.velY = -1
+                    } else if (dir === "b") {
+                        dot.velX = 0
+                        dot.velY = -1
+                    } else if (dir === "t") {
+                        dot.velX = 0
+                        dot.velY = 1
+                    }
+                    if (dir) {
+                        dot.alive = false
+                        player.hp -= 1
+                        dot.player.socket.emit('blue',10)
+                        player.socket.emit('red',10)
+                        if (player.hp < 0) {
+                            dot.player.socket.emit('blue',60)
+                            player.socket.emit('red',60)
+                            player.spawn()
+                        }
+                    }
+                }
+            }
+        })
+        dot.update()
+    })
+
+    players.forEach((player) => {
+        player.grounded = false
+        player.online = new Date().getTime() - player.created.getTime()
+        boxes.forEach((box) => {
+            if (box.name == 116) {//if finished
+                let dir = Utils.colCheck(player, box, true)
+                if (dir) {
+                    let score = new Date().getTime() - player.spawnedAt.getTime() + player.score
                     if (player.score <= 0 || player.score > score) {
-                        player.score = score;
-                        // save_scores(function () {
-                        //     console.log('scores saved');
-                        //     load_scores(function (res) {
-                        //         console.log('scores load_scores', res);
-                        //
-                        //     });
-                        // })
-                    } else {
-                        // load_scores();
+                        player.score = score
                     }
                 }
             }
             if (box.name == 84 && player.alive) {//if lava
-                let dir = Utils.colCheck(player, box, true);
+                let dir = Utils.colCheck(player, box, true)
                 if (dir) {
-                    player.spawn();
-                    //return;//todo
-                    // player.alive = false;
-                    // setTimeout(function () {
-                    //     if (player.alive) {
-                    //         player.spawn();
-                    //     }
-                    // }, 2000);
+                    player.hp -= 1
                 }
             }
-            // if (box.name == 91) {//todo ladder
-            // var dir = Utils.colCheck(player, box);
-            //   if (dir) {
-            // player.ladder = true;
-            // player.velX = 2;
-            //  player.velY = 2;
-            // }
-            //return false;
-            //   }
+
             if (!box.hollow) {
-                let dir = Utils.colCheck(player, box);
+                let dir = Utils.colCheck(player, box)
+                player.platf = false
                 if (dir === "l" || dir === "r") {
-                    player.velX = 0;
-                    player.jumping = false;
+                    player.velX = 0
+                    player.jumping = false
                 } else if (dir === "b") {
-                    player.grounded = true;
-                    player.jumping = false;
+                    player.grounded = true
+                    player.jumping = false
+                    if (box.moving) {
+                        player.velX = box.velX
+                        player.velY = box.velY
+                        player.platf = true
+                    }
                 } else if (dir === "t") {
-                    player.velY = 0;
+                    player.velY = 0
                     if (box.name == 0) {
-                        boxes.delete(box.id);//todo also respawn cooldown?
+                        boxes.delete(box.id)//todo also respawn cooldown?
                     }
                 }
             }
-        });
-        bots.forEach(function (bot) {
-            if (!bot.alive) return false;
-            let dir = Utils.colCheck(player, bot);
+        })
+
+        bots.forEach((bot) => {
+            if (!bot.alive) return false
+            let dir = Utils.colCheck(player, bot)
             if (dir === "l" || dir === "r") {
-                player.velX = 0;
-                player.jumping = false;
-                // console.log('kick!')
+                bot.killedAt = new Date().getTime()
+                bot.alive = false
+                player.jumping = false
+                player.hp -= 33 //todo do alive detect inside player loop not repeat every here
+                player.velX = 0
+                player.velY = -2
+                player.grounded = false
+                player.y -= 1
+                player.socket.emit('red')
             } else if (dir === "b") {
-                player.grounded = true;
-                player.jumping = false;
-                bot.y += 26;
-                // console.log('fKILL HIM');
-                bot.killedAt = new Date().getTime();
-                bot.alive = false;
-                player.score -= 1000;
+                player.grounded = true
+                player.jumping = false
+                // bot.y += 26
+                // console.log('KILL HIM')
+                bot.killedAt = new Date().getTime()
+                player.socket.emit('blue',60)//todo emit any color, start duration and speed ? on fire color
+                bot.alive = false
+                player.score -= 1000
             } else if (dir === "t") {
-                //player.velY *= -1;
-                //   console.log('from bottom?')
-
-                player.spawn();
+                // console.log('from bottom?')
+                player.socket.emit('red')
+                player.spawn()
             }
-        });
+        })
 
-        player.update();
-        data.boxes = player.b;
-        player.socket.emit('data', data);
-    });
+        player.update()
+        player.players = []
+        player.boxes = []
+        player.bots = []
+        player.dots = []
+
+        function dist(x1, y1, x2, y2) {
+            function diff(num1, num2) {
+                return num1 > num2 ? num1 - num2 : num2 - num1
+            }
+
+            return Math.sqrt(Math.pow(diff(x1, x2), 2) + Math.pow(diff(y1, y2), 2))
+        }
+
+        players.forEach((player) => {
+            player.keys.my = Math.round(player.keys.my)
+            player.keys.mx = Math.round(player.keys.mx)
+            if (player.keys.m1) {
+                if (!player.fire) {
+                    player.fire = true;
+                    setTimeout(function () {
+                        player.fire = false;
+                    }, 170);
+                    dots.set(dots_count++, new Dot({
+                        id: dots_count,
+                        x: player.x + player.width / 2,
+                        y: player.y + player.height / 2,
+                        tx: player.keys.mx,
+                        ty: player.keys.my,
+                        maxSpeed: Utils.getRandomInt(11, 11),
+                        player: player
+                    }))
+
+                }
+            } else {
+                player.fire = false;
+            }
+
+            players.forEach((players2) => {
+                if (dist(players2.x, players2.y, player.x, player.y) < 600) {
+                    if (!player.players) player.players = []
+                    player.players.push([
+                        players2.id,
+                        players2.x,
+                        players2.y,
+                        players2.velX,
+                        players2.velY,
+                        players2.online,
+                        players2.name,
+                        players2.score,
+                        players2.hp,
+                        players2.width,
+                        players2.height,
+                    ])
+                }
+            })
+            boxes.forEach((box) => {
+                if (dist(box.x, box.y, player.x, player.y) < 600) {
+                    if (!player.boxes) player.boxes = []
+                    player.boxes.push([
+                        box.id,
+                        box.x,
+                        box.y,
+                        box.name,
+
+                        box.width,
+                        box.height,
+                    ])
+                }
+            })
+            bots.forEach((bot) => {
+                if (dist(bot.x, bot.y, player.x, player.y) < 600) {
+                    if (!player.bots) player.bots = []
+                    player.bots.push([
+                        bot.id,
+                        bot.x,
+                        bot.y,
+                        bot.velX,
+                        bot.velY,
+                        bot.alive,
+
+                        bot.width,
+                        bot.height,
+                        bot.hp,
+                    ])
+                }
+            })
+            dots.forEach((dot) => {
+                if (dist(dot.x, dot.y, player.x, player.y) < 600) {
+                    if (!player.dots) player.dots = []
+                    player.dots.push([
+                        dot.id,
+                        dot.x,
+                        dot.y,
+                        dot.alive,
+                    ])
+                }
+            })
+            gores.forEach((gore) => {
+                if (dist(gore.x, gore.y, player.x, player.y) < 600) {
+                    if (!player.gores) player.gores = []
+                    player.gores.push([
+                        gore.id,
+                        gore.x,
+                        gore.y,
+                    ])
+                }
+            })
+        })
+
+        player.socket.emit('players', player.players)
+        player.socket.emit('boxes', player.boxes)
+        player.socket.emit('bots', player.bots)
+        player.socket.emit('dots', player.dots)
+        //player.socket.emit('gores', player.gores)//todo this not wotk
+    })
+
 }
-
-
-/*
-player.hit(50);
-player.keys.w = true;
-console.log(player.update().getPosition());
-player.hit(30);
-player.keys.w = false;
-player.keys.d = true;
-console.log(player.update().getPosition());
-player.hit(50);
-player.hit(50);
-player.keys.d = false;
-player.keys.a = true;
-player.rename('petja');
-console.log(player.update().getPosition());
-player.keys.a = false;
-console.log(player.update().getPosition());
-player.hit(530);
-player.keys.a = true;
-console.log(player.update().getPosition());
-player.keys.a = false;
-console.log(player.update().getPosition());
-
-*/
